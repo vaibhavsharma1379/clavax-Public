@@ -1,0 +1,35 @@
+
+{% extends "base.html" %}
+{% block title %}Add Class{% endblock %}
+{% block content %}
+
+<div class="container mt-5">
+    <h1 class="mb-4">Add class</h1>
+    <form method="post" id="class-form">
+        <div class="form-group">
+            <label for="class_name">Class name:</label>
+            <input type="text" class="form-control" id="class_name" name="class_name" required>
+        </div>
+        <div class="form-group">
+            <label for="class_room_id">Class room id:</label>
+            <input type="text" class="form-control" id="class_room_id" name="class_room_id" required>
+        </div>
+        <button type="button" class="btn btn-primary" id="class-btn">Register</button>
+       
+       <script>
+            document.getElementById('class-btn').addEventListener('click', function(){
+                const form = document.getElementById('class-form');
+                const formData = new FormData(form);
+                axios.post('/api/addclassApi/',formData,{
+                   headers:{'content-type':'multipart/form-data',
+                    'X-CSRFToken':document.querySelector('[name=csrf-token]')
+                   }
+                }).then((result) => {
+                    alert("class added successfully")
+                    window.location.reload()
+                }).catch((error) => {
+                    alert("class added failed:" +JSON.stringify(error.response.data));
+                });;
+            })
+        </script>
+{% endblock %}

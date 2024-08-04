@@ -2,11 +2,14 @@ from django.contrib import admin
 from .models import Class,Student
 from django.core.mail import send_mail
 from student import settings  
+from django.contrib.auth.models import User
 # Register your models here.
 
 class ClassAdmin(admin.ModelAdmin):
     list_display=['class_room_id','class_name']
     search_fields = ['class_name']
+
+
 class StudentAdmin(admin.ModelAdmin):
     list_display=['first_name','last_name','email','date_of_birth','status']
     search_fields = ['first_name']

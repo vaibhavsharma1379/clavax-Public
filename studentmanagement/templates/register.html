@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}register student{% endblock %}
+{% block content %}
+    <div class="container mt-5">
+        {% csrf_token %}
+        <h1 class="mb-4">Register</h1>
+        <form method="post" id="register-form" enctype="multipart/form-data" >
+            <div class="form-group">
+                <label for="first_name">First Name:</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" required>
+            </div>
+            <div class="form-group">
+                <label for="last_name">Last Name:</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone:</label>
+                <input type="text" class="form-control" id="phone" name="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="date_of_birth">Date of Birth:</label>
+                <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
+            </div>
+            <div class="form-group">
+                <label for="class_assigned">Class:</label>
+                <select id="class_assigned" name="class_assigned" class="form-control" required>
+                    {% for class in classes %}
+                        <option value="{{ class.id }}">{{ class.class_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="image">Image:</label>
+                <input type="file" class="form-control-file" id="image" name="image">
+            </div>
+            <button type="button" class="btn btn-primary" id="register-btn">Register</button>
+        </form>
+    </div>
+    <script>
+document.addEventListener("DOMContentLoaded", function() {
+    const accessToken = localStorage.getItem('access_token');
+
+    
+    axios.get('/api/check_superuser/', {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    })
+    .then(response => {
+        const { is_superuser } = response.data;
+        if (!is_superuser) {
+            
+            window.location.href = '/api/loginform/';;
+        }
+    })
+    .catch(error => {
+        alert('Failed to check user status: ' + JSON.stringify(error.response.data));
+        window.location.href = '/api/loginform/';
+    });
+
+
+        document.getElementById('register-btn').addEventListener('click', function() {
+            const formData = new FormData();
+            formData.append('first_name', document.getElementById('first_name').value);
+            formData.append('last_name', document.getElementById('last_name').value);
+            formData.append('email', document.getElementById('email').value);
+            formData.append('password', document.getElementById('password').value);
+            formData.append('phone', document.getElementById('phone').value);
+            formData.append('date_of_birth', document.getElementById('date_of_birth').value);
+            formData.append('class_assigned', document.getElementById('class_assigned').value);
+            const imageInput = document.getElementById('image');
+            if (imageInput.files.length > 0) {
+                formData.append('image', imageInput.files[0]);
+            }
+
+            axios.post('/api/student/register/', formData, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'multipart/form-data',
+                    'X-CSRFToken': document.querySelector('[name=csrf-token]').content
+                }
+            })
+            .then(function(response) {
+                alert('Registration successful');
+                window.location.href = '/api/loginform/';
+            })
+            .catch(function(error) {
+                alert('Registration failed: ' + JSON.stringify(error.response.data));
+            });
+        });
+    });
+    </script>
+  
+
+  {% endblock %}

@@ -1,11 +1,46 @@
 from django.shortcuts import render
-from rest_framework import generics
-from .models import Student
-from .serializers import StudentSerializer,LoginSerializer,StudentProfileUpdateSerializer
-from rest_framework.permissions import IsAuthenticated  
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
+from rest_framework import generics,status,serializers
+from django.http import JsonResponse
+from .models import Student,Class
+from rest_framework.decorators import api_view,permission_classes
+from .serializers import StudentSerializer,LoginSerializer,StudentProfileUpdateSerializer,ClassSerializer
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
+from rest_framework.exceptions import NotFound
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+def AddClassForm(request):
+    return render(request,'class.html')
+
+
+def registerStudent_page(request):          
+    classes = Class.objects.all()
+    return render(request, 'register.html', {'classes': classes})
+
+def LoginForm(request):
+    return render(request, 'login.html')
+
+def StudentUpdateForm(request):
+    classes = Class.objects.all()
+    return render(request, 'update-profile.html',{'classes': classes})
+
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def register(request):
+    serializer = StudentSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse({'message': 'Registration successful'}, status=201)
+    return JsonResponse({'error': serializer.errors}, status=400)
+
+@api_view(['POST'])
+def AddClass(request):
+    serializer=ClassSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse({'success': "class added successfully"}, status=200)
+    return JsonResponse({'error': serializer.errors}, status=400)
 
 class StudentListCreateView(generics.ListCreateAPIView):
     queryset = Student.objects.all()
@@ -15,34 +50,40 @@ class StudentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
-class StudentLoginView(generics.GenericAPIView):
-    serializer_class = LoginSerializer
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']  
-        password = serializer.validated_data['password']
-        if email and password:
-            try:
-                student=Student.objects.get(email=email)
-                if student.check_password(password) and student.status == True:
-                    refresh=RefreshToken.for_user(student)
-                   
-                    return Response({
-                        'refresh':str(refresh),
-                        'access':str(refresh.access_token),
-                        
-                    })  
-                return Response({'detail': f'Invalid credentials or account is inactive,{email} ,{password},{student.check_password(password)}'}, status=400)                              
-            except student.DoesNotExist:
-                return Response({'detail':'User does not exist'}, status=400)
-        return Response({'detail': 'email and password required'}, status=400)
 
+@api_view(['POST'])
+def StudentLoginView(request):
+    serializer = LoginSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        validated_data = serializer.validated_data
+       
+        student = Student.objects.get(phone=validated_data['phone'])
+        print(student.is_superuser)
+        print("frgegtehetht")
+        return Response({
+            'refresh': validated_data['refresh'],
+            'access': validated_data['access'],
+            'is_superuser': student.is_superuser,
+        }, status=status.HTTP_200_OK)
+    return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class StudentProfileUpdateView(generics.UpdateAPIView):
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_superuser(request):
+    user = request.user
+    return Response({'is_superuser': user.is_superuser}, status=status.HTTP_200_OK)
+
+class StudentProfileUpdateView(generics.RetrieveUpdateAPIView):
     serializer_class = StudentProfileUpdateSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        # Ensure that students can only update their own profiles
-        return self.request.user
+        user = self.request.user
+        try:
+            student = Student.objects.get(phone=user.phone)
+        except Student.DoesNotExist:
+            raise NotFound("Student profile not found.")
+        return student
+       
