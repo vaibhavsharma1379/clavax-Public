@@ -7,4 +7,4 @@
 4: http://127.0.0.1:8000/api/addclass/ : for adding a class form
 5: http://127.0.0.1:8000/admin/   : admin page link
 
- got through requirements.txt file for required library and packages
+ go through requirements.txt file for required library and packages
