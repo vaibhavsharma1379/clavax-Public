@@ -6,5 +6,3 @@
     (note: only superuser can register a student so login as superuser otherwise you will redirect to login page again)
 4: http://127.0.0.1:8000/api/addclass/ : for adding a class form
 5: http://127.0.0.1:8000/admin/   : admin page link
-
-6: http://127.0.0.1:8000/redoc/    ,http://127.0.0.1:8000/swagger/ (API has documentation available)
