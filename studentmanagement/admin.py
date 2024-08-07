@@ -11,7 +11,7 @@ class ClassAdmin(admin.ModelAdmin):
 
 
 class StudentAdmin(admin.ModelAdmin):
-    list_display=['first_name','last_name','email','date_of_birth','status']
+    list_display=['first_name','last_name','email','date_of_birth','status','is_superuser']
     search_fields = ['first_name']
     list_filter = ['status']
     actions = ['activate_students', 'deactivate_students']

@@ -9,4 +9,4 @@
     
     go through requirement.txt for library and packges
 
-6: http://127.0.0.1:8000/redoc/    ,http://127.0.0.1:8000/swagger/ (API has documentation available)
+6: http://127.0.0.1:8000/redoc/    ,http://127.0.0.1:8000/swagger/ (API has documentation available) 
